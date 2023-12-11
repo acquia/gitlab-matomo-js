@@ -32,17 +32,17 @@ function hideThings () {
 function addGainsight () {
   var gainsight_api_keys = {
     // Prod.
-    'code.acquia.com': 'AP-IJB0Z39VSYPZ-2',
+    'code.acquia.com': 'XXXXXXXXXX',
     // Dev.
-    'code.dev.cloudservices.acquia.io': 'AP-IJB0Z39VSYPZ-2-2',
+    'code.dev.cloudservices.acquia.io': 'XXXXXXXXXX',
     // Stage.
-    'code-staging.cloudservices.acquia.io': 'AP-IJB0Z39VSYPZ-2-3'
+    'code-staging.cloudservices.acquia.io': 'XXXXXXXXXX'
   }
   if (location.hostname in gainsight_api_keys) {
     var gainsight_key = gainsight_api_keys[location.hostname];
   } else {
     // Default api key is the prod one.
-    var gainsight_key = 'AP-IJB0Z39VSYPZ-2';
+    var gainsight_key = 'XXXXXXXXXX';
   }
   (function(n,t,a,e,co){var i="aptrinsic";n[i]=n[i]||function(){
         (n[i].q=n[i].q||[]).push(arguments)},n[i].p=e;n[i].c=co;
