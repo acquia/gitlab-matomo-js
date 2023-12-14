@@ -8,11 +8,13 @@ var checkRequiredElementsExist = setInterval(function () {
 }, 100);
 
 function hideThings () {
-  if ((webIdeButton = document.querySelector('[data-qa-selector="action_dropdown"]'))) {
-    webIdeButton.style.display = 'none';
+  var webIdeButton = document.querySelector('[data-qa-selector="action_dropdown"]')
+  if (webIdeButton.style.display === "block" ) {
+    webIdeButton.style.display = 'none !important';
   }
-  if ((editButton = document.getElementById('[id="dropdown-toggle-btn-102"]'))) {
-    editButton.style.display = 'none';
+  var editButton = document.getElementById('dropdown-toggle-btn-52')
+  if (editButton.style.display === "block") {
+    editButton.style.display = 'none !important';
   }
   if ((editIdeButton = document.querySelector('[data-track-action="click_edit_ide"]'))) {
     editIdeButton.style.display = 'none';
