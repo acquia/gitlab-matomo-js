@@ -1,6 +1,6 @@
 addGainsight();
 var checkRequiredElementsExist = setInterval(function () {
-  if (window.gl !== 'undefined' && document.querySelectorAll('[data-user]').length) {
+  if (window.gl !== 'undefined' && document.querySelectorAll('[data-project]').length) {
     clearInterval(checkRequiredElementsExist);
     hideThings();
     gainsightIdentify();
@@ -13,8 +13,8 @@ function hideThings () {
     webIdeButton.setAttribute('style', 'display:none !important')
   }
   var editButton = document.getElementById('dropdown-toggle-btn-50')
-  if (editButton.style.display === "block !important") {
-    editButton.style.display = 'none !important';
+  if (!editButton) {
+    editButton.setAttribute('style', 'display:none !important')
   }
   if ((infrastructureLink = document.getElementById('menu-section-button-operate'))) {
     infrastructureLink.style.display = 'none !important';
@@ -54,5 +54,5 @@ function addGainsight () {
 }
 
 function gainsightIdentify() {
-   aptrinsic("identify", { "id": document.querySelectorAll('[data-user]')[0].getAttribute('data-user') } );
+   aptrinsic("identify", { "id": document.querySelectorAll('[data-project]')[0].getAttribute('data-project') } );
 }
