@@ -9,11 +9,11 @@ var checkRequiredElementsExist = setInterval(function () {
 
 function hideThings () {
   var webIdeButton = document.querySelector('[data-qa-selector="action_dropdown"]')
-  if(!webIdeButton){
+  if(webIdeButton){
     webIdeButton.setAttribute('style', 'display:none !important')
   }
-  var editButton = document.getElementById('dropdown-toggle-btn-50')
-  if (!editButton) {
+  var editButton = document.querySelector('[data-qa-selector="action_dropdown"]')
+  if (editButton) {
     editButton.setAttribute('style', 'display:none !important')
   }
   if ((infrastructureLink = document.getElementById('menu-section-button-operate'))) {
