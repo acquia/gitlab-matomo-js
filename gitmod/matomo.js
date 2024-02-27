@@ -1,13 +1,45 @@
 addGainsight();
-var checkRequiredElementsExist = setInterval(function () {
-  if (window.gl !== 'undefined' && document.readyState == "complete" && document.querySelectorAll('[data-project]').length) {
-    clearInterval(checkRequiredElementsExist);
-    hideThings();
-    gainsightIdentify();
-  }
-}, 100);
+window.addEventListener("load", function(){
+  var checkRequiredElementsExist = setInterval(function () {
+    if (window.gl !== 'undefined' && document.readyState == "complete" && document.querySelectorAll('[data-project]').length) {
+      clearInterval(checkRequiredElementsExist);
+      hideThings();
+      gainsightIdentify();
+    }
+  }, 100);
+})
 
 function hideThings () {
+
+  var webIde = document.evaluate("//span[contains(., 'Web IDE')]", document, null, XPathResult.ANY_TYPE, null );
+  var webIdeDoc = webIde.iterateNext();
+  
+  var webIdeDiv = webIdeDoc;
+  var content;
+  var hasText;
+  for (let index = 1; index < 10; index++) {
+    console.log("index  ", index)
+    console.log("webIdeDoc 1", webIdeDiv)
+    content = webIdeDiv.textContent || webIdeDiv.innerText;
+    hasText = content.toLowerCase().includes("edit");
+    console.log("hasText 1", hasText)
+  
+    if (((webIdeDiv.classList.contains("gl-new-dropdown")) && (webIdeDiv.classList.contains("gl-display-block!")) && hasText)) {
+      if(webIdeDiv.querySelectorAll("li").length > 2){
+        var closeseList=webIdeDoc.closest("li");
+        console.log("closeseList 1", closeseList)
+        closeseList.setAttribute('style', 'display:none !important');
+      }
+      console.log("webIdeDiv 1", webIdeDiv)
+      webIdeDiv.setAttribute('style', 'display:none !important');
+      console.log("webIdeDiv 2", webIdeDiv)
+    } else {
+      console.log("webIdeDiv 4", webIdeDiv)
+      webIdeDiv = webIdeDiv.parentNode
+      console.log("webIdeDiv 5", webIdeDiv)
+    }
+  }
+
   var webIdeButton = document.querySelector('[data-qa-selector="action_dropdown"]')
   if(webIdeButton){
     webIdeButton.setAttribute('style', 'display:none !important')
