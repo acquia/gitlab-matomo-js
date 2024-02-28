@@ -23,10 +23,12 @@ function checkURLchange(oldURL){
   }
 }
 
-container.addEventListener("click", () => {
-  console.log("in event listener")
-  hideThings();
-});
+if(container){
+  container.addEventListener("click", () => {
+    console.log("in event listener")
+    hideThings();
+  });
+}
 
 /**
  * Add logic to hide the webide and edit options from Code Studio UI
