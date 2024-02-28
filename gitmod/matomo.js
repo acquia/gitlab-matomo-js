@@ -1,25 +1,32 @@
 addGainsight();
+
+var container;
+
 var checkRequiredElementsExist = setInterval(function () {
+    // checkURLchange(oldURL);
     if (window.gl !== 'undefined' && document.readyState == "complete" && document.querySelectorAll('[data-project]').length) {
+      container = document.querySelector(".table-holder");
       clearInterval(checkRequiredElementsExist);
       hideThings();
       gainsightIdentify();
     }
   }, 100);
 
-var oldURL = window.location.href;
-setInterval(checkURLchange, 1000);
-
 /**
  * Check if there is change in URL. If the change observed invoke hideThings();
  *
  */ 
-function checkURLchange(){
+function checkURLchange(oldURL){
   if(window.location.href != oldURL){
       oldURL = window.location.href;
       hideThings();
   }
 }
+
+container.addEventListener("click", () => {
+  console.log("in event listener")
+  hideThings();
+});
 
 /**
  * Add logic to hide the webide and edit options from Code Studio UI
@@ -29,29 +36,17 @@ function hideThings () {
   // Fetch the document that contains 'Web IDE' text
   var webIde = document.evaluate("//span[contains(., 'Web IDE')]", document, null, XPathResult.ANY_TYPE, null );
   var webIdeDoc = webIde.iterateNext();
-  // Assign the document to webIdeDiv
-  var webIdeDiv = webIdeDoc;
-  var content;
-  var hasText;
-  // Iterate to get the parent node of the webIdeDiv, length is set to 10 as the currently
-  // it takes 9 iterations to get the parent div where we want to apply style
-  for (let index = 1; index < 10; index++) {
-    content = webIdeDiv.textContent || webIdeDiv.innerText;
-    // extra check
-    hasText = content.toLowerCase().includes("edit");
-    // Add checks to verify if the correct parent div is taken
-    if (((webIdeDiv.classList.contains("gl-new-dropdown")) && (webIdeDiv.classList.contains("gl-display-block!")) && hasText)) {
-      // As there are 2 places for webide, and dropdown length differs for both the places
-      // for multipe list, style is applied on list
-      if(webIdeDiv.querySelectorAll("li").length > 2){
-        var closeseList=webIdeDoc.closest("li");
-        closeseList.setAttribute('style', 'display:none !important');
-      }
-      webIdeDiv.setAttribute('style', 'display:none !important');
-    } else {
-      webIdeDiv = webIdeDiv.parentNode
-    }
+
+  var content = webIdeDoc.textContent || webIdeDoc.innerText;
+
+  // The style is applied on multiple lists available to edit the files
+  if (content.toLowerCase().includes("open in web ide")){
+    webIdeDoc.closest("li").setAttribute('style', 'display:none !important');
+  } else {
+    // The style is applied on when there is one option available to edit through web ide
+    webIdeDoc.parentNode.closest(".gl-new-dropdown").setAttribute('style', 'display:none !important');
   }
+
   // Hide Operator section from left panel
   if ((operateLink = document.querySelector('[data-qa-section-name="Operate"]'))) {
     operateLink.setAttribute('style', 'display:none !important')
