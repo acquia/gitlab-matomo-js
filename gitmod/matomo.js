@@ -24,8 +24,8 @@ function checkURLchange(oldURL){
 }
 
 if(container != null){
-  container.addEventListener("click", () => {
-    console.log("in event listener")
+    container.addEventListener("click", () => {
+    console.log("in event listener");
     hideThings();
   });
 }
@@ -35,19 +35,24 @@ if(container != null){
  *
  */ 
 function hideThings () {
+  console.log("in hideThings")
   // Fetch the document that contains 'Web IDE' text
   var webIde = document.evaluate("//span[contains(., 'Web IDE')]", document, null, XPathResult.ANY_TYPE, null );
   var webIdeDoc = webIde.iterateNext();
-
+  var content;
+  console.log(" webIdeDoc ", webIdeDoc)
   if(webIde != null && webIdeDoc != null){
-    var content = webIdeDoc.textContent || webIdeDoc.innerText;
+    content = webIdeDoc.textContent || webIdeDoc.innerText;
   }
+  console.log(" content ", content)
 
   // The style is applied on multiple lists available to edit the files
   if (content.toLowerCase().includes("open in web ide")){
+    console.log(" webIdeDoc.closest(li) ", webIdeDoc.closest("li"))
     webIdeDoc.closest("li").setAttribute('style', 'display:none !important');
   } else {
     // The style is applied on when there is one option available to edit through web ide
+    console.log(" webIdeDoc.parentNode.closest(.gl-new-dropdown) ", webIdeDoc.parentNode.closest(".gl-new-dropdown"))
     webIdeDoc.parentNode.closest(".gl-new-dropdown").setAttribute('style', 'display:none !important');
   }
 
