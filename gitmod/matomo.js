@@ -23,7 +23,7 @@ function checkURLchange(oldURL){
   }
 }
 
-if(container){
+if(container != null){
   container.addEventListener("click", () => {
     console.log("in event listener")
     hideThings();
@@ -39,7 +39,9 @@ function hideThings () {
   var webIde = document.evaluate("//span[contains(., 'Web IDE')]", document, null, XPathResult.ANY_TYPE, null );
   var webIdeDoc = webIde.iterateNext();
 
-  var content = webIdeDoc.textContent || webIdeDoc.innerText;
+  if(webIde != null && webIdeDoc != null){
+    var content = webIdeDoc.textContent || webIdeDoc.innerText;
+  }
 
   // The style is applied on multiple lists available to edit the files
   if (content.toLowerCase().includes("open in web ide")){
