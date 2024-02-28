@@ -23,8 +23,9 @@ function checkURLchange(oldURL){
   }
 }
 
-if(container != null){
-    container.addEventListener("click", () => {
+function observeChanges(){
+  console.log("in observeChanges");
+  container.addEventListener("click", () => {
     console.log("in event listener");
     hideThings();
   });
@@ -99,3 +100,6 @@ function addGainsight () {
 function gainsightIdentify() {
    aptrinsic("identify", { "id": document.querySelectorAll('[data-project]')[0].getAttribute('data-project') } );
 }
+
+const observer = new MutationObserver(observeChanges);
+observer.observe(container);
