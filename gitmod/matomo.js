@@ -1,35 +1,21 @@
 addGainsight();
 
-var container;
-
 var checkRequiredElementsExist = setInterval(function () {
     // checkURLchange(oldURL);
     if (window.gl !== 'undefined' && document.readyState == "complete" && document.querySelectorAll('[data-project]').length) {
-      container = document.querySelector(".table-holder");
+      // Use it
+      observe('.table-holder', element => {
+        // element.style.outline = '2px solid red';
+        element.addEventListener('click', ()=>{
+          hideThings();
+        })
+      });
       clearInterval(checkRequiredElementsExist);
       hideThings();
       gainsightIdentify();
     }
   }, 100);
 
-/**
- * Check if there is change in URL. If the change observed invoke hideThings();
- *
- */ 
-function checkURLchange(oldURL){
-  if(window.location.href != oldURL){
-      oldURL = window.location.href;
-      hideThings();
-  }
-}
-
-function observeChanges(){
-  console.log("in observeChanges");
-  container.addEventListener("click", () => {
-    console.log("in event listener");
-    hideThings();
-  });
-}
 
 /**
  * Add logic to hide the webide and edit options from Code Studio UI
@@ -38,23 +24,22 @@ function observeChanges(){
 function hideThings () {
   console.log("in hideThings")
   // Fetch the document that contains 'Web IDE' text
-  var webIde = document.evaluate("//span[contains(., 'Web IDE')]", document, null, XPathResult.ANY_TYPE, null );
-  var webIdeDoc = webIde.iterateNext();
-  var content;
-  console.log(" webIdeDoc ", webIdeDoc)
-  if(webIde != null && webIdeDoc != null){
-    content = webIdeDoc.textContent || webIdeDoc.innerText;
-  }
-  console.log(" content ", content)
-
-  // The style is applied on multiple lists available to edit the files
-  if (content.toLowerCase().includes("open in web ide")){
-    console.log(" webIdeDoc.closest(li) ", webIdeDoc.closest("li"))
-    webIdeDoc.closest("li").setAttribute('style', 'display:none !important');
-  } else {
-    // The style is applied on when there is one option available to edit through web ide
-    console.log(" webIdeDoc.parentNode.closest(.gl-new-dropdown) ", webIdeDoc.parentNode.closest(".gl-new-dropdown"))
-    webIdeDoc.parentNode.closest(".gl-new-dropdown").setAttribute('style', 'display:none !important');
+  var webIde = document.evaluate("//span[contains(., 'Web IDE') or contains(., 'Open in Web IDE')]", document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null );
+  
+  for (let index = 0; index < webIde.snapshotLength; index++) {
+    var content = webIde.snapshotItem(index);
+    if(webIde != null && webIde != null){
+    
+      // The style is applied on multiple lists available to edit the files
+      if (content.textContent.startsWith('Open in Web IDE')){
+        console.log(" content.closest(li) ", content.closest("li"))
+        content.closest("li").setAttribute('style', 'display:none !important');
+      } else {
+        // The style is applied on when there is one option available to edit through web ide
+        console.log(" content.parentNode.closest(.gl-new-dropdown) ", content.parentNode.closest(".gl-new-dropdown"))
+        content.parentNode.closest(".gl-new-dropdown").setAttribute('style', 'display:none !important');
+      }
+    }
   }
 
   // Hide Operator section from left panel
@@ -101,5 +86,36 @@ function gainsightIdentify() {
    aptrinsic("identify", { "id": document.querySelectorAll('[data-project]')[0].getAttribute('data-project') } );
 }
 
-const observer = new MutationObserver(observeChanges);
-observer.observe(container);
+// Ensuring call of function 'hideThings' after entire page loads properly, to avoid race conditions
+window.addEventListener("load", afterLoaded, false);
+
+function afterLoaded() {
+  // Additional wait for 500 milli seconds
+  const additionalWait = setTimeout(hideThings, 200);
+}
+
+function queryElements(selector, callback) {
+  console.log("in queryElements")
+
+  const elements = document.querySelectorAll(selector);
+  elements.forEach(element => callback(element));
+}
+
+function observe(selector, callback) {
+  console.log("in observe")
+  // hideThings();
+  // Call it once to get all the elements already on the page
+  queryElements(selector, callback);
+
+  const observer = new MutationObserver(() => {
+    console.log("in observer")
+    queryElements(selector, callback);
+  });
+
+  observer.observe(document.documentElement, {
+    // Listen to any kind of changes that might match the selector
+    attributes: true,
+    childList: true,
+  });
+}
+
