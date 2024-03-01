@@ -1,11 +1,9 @@
 addGainsight();
 
 var checkRequiredElementsExist = setInterval(function () {
-    // checkURLchange(oldURL);
     if (window.gl !== 'undefined' && document.readyState == "complete" && document.querySelectorAll('[data-project]').length) {
       // Use it
       observe('.table-holder', element => {
-        // element.style.outline = '2px solid red';
         element.addEventListener('click', ()=>{
           hideThings();
         })
@@ -14,7 +12,7 @@ var checkRequiredElementsExist = setInterval(function () {
       hideThings();
       gainsightIdentify();
     }
-  }, 100);
+  }, 200);
 
 
 /**
@@ -22,7 +20,6 @@ var checkRequiredElementsExist = setInterval(function () {
  *
  */ 
 function hideThings () {
-  console.log("in hideThings")
   // Fetch the document that contains 'Web IDE' text
   var webIde = document.evaluate("//span[contains(., 'Web IDE') or contains(., 'Open in Web IDE')]", document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null );
   
@@ -32,11 +29,9 @@ function hideThings () {
     
       // The style is applied on multiple lists available to edit the files
       if (content.textContent.startsWith('Open in Web IDE')){
-        console.log(" content.closest(li) ", content.closest("li"))
         content.closest("li").setAttribute('style', 'display:none !important');
       } else {
         // The style is applied on when there is one option available to edit through web ide
-        console.log(" content.parentNode.closest(.gl-new-dropdown) ", content.parentNode.closest(".gl-new-dropdown"))
         content.parentNode.closest(".gl-new-dropdown").setAttribute('style', 'display:none !important');
       }
     }
@@ -95,20 +90,16 @@ function afterLoaded() {
 }
 
 function queryElements(selector, callback) {
-  console.log("in queryElements")
 
   const elements = document.querySelectorAll(selector);
   elements.forEach(element => callback(element));
 }
 
 function observe(selector, callback) {
-  console.log("in observe")
-  // hideThings();
   // Call it once to get all the elements already on the page
   queryElements(selector, callback);
 
   const observer = new MutationObserver(() => {
-    console.log("in observer")
     queryElements(selector, callback);
   });
 
