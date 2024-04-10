@@ -1,33 +1,57 @@
 addGainsight();
-var checkRequiredElementsExist = setInterval(function () {
-  if (window.gl !== 'undefined' && document.readyState == "complete" && document.querySelectorAll('[data-project]').length) {
-    clearInterval(checkRequiredElementsExist);
-    hideThings();
-    gainsightIdentify();
-  }
-}, 100);
 
+var checkRequiredElementsExist = setInterval(function () {
+    if (window.gl !== 'undefined' && document.readyState == "complete" && document.querySelectorAll('[data-project]').length) {
+      // Use it
+      observe('.table-holder', element => {
+        element.addEventListener('click', ()=>{
+          hideThings();
+        })
+      });
+      clearInterval(checkRequiredElementsExist);
+      hideThings();
+      gainsightIdentify();
+    }
+  }, 200);
+
+
+/**
+ * Add logic to hide the webide and edit options from Code Studio UI
+ *
+ */ 
 function hideThings () {
-  var webIdeButton = document.querySelector('[data-qa-selector="action_dropdown"]')
-  if(webIdeButton){
-    webIdeButton.setAttribute('style', 'display:none !important')
+  // Fetch the document that contains 'Web IDE' text
+  var webIde = document.evaluate("//span[contains(., 'Web IDE') or contains(., 'Open in Web IDE')]", document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null );
+  
+  for (let index = 0; index < webIde.snapshotLength; index++) {
+    var content = webIde.snapshotItem(index);
+    if(webIde != null && webIde != null){
+    
+      // The style is applied on multiple lists available to edit the files
+      if (content.textContent.startsWith('Open in Web IDE')){
+        content.closest("li").setAttribute('style', 'display:none !important');
+      } else {
+        // The style is applied on when there is one option available to edit through web ide
+        content.parentNode.closest(".gl-new-dropdown").setAttribute('style', 'display:none !important');
+      }
+    }
   }
-  var editWebButton = document.querySelector('[data-qa-selector="webide_menu_item"]')
-  if (editWebButton) {
-    editWebButton.setAttribute('style', 'display:none !important')
-  }
+
+  // Hide Operator section from left panel
   if ((operateLink = document.querySelector('[data-qa-section-name="Operate"]'))) {
     operateLink.setAttribute('style', 'display:none !important')
   }
+  // Hide Monitor section from left panel
   if ((monitorLink = document.querySelector('[data-qa-section-name="Monitor"]'))) {
     monitorLink.setAttribute('style', 'display:none !important')
   }
+  // Hide 'Add Kubernetes cluster' section from project page
   if ((k8sLink = document.evaluate(
-        "//a[contains(text(),'Add Kubernetes cluster')]", document, null,
+        "//a[contains(.,'Add Kubernetes cluster')]", document, null,
         XPathResult.FIRST_ORDERED_NODE_TYPE, null
       ).singleNodeValue)
   ) {
-    k8sLink.style.display = 'none';
+    k8sLink.setAttribute('style', 'display:none !important');
   }
 }
 
@@ -56,3 +80,33 @@ function addGainsight () {
 function gainsightIdentify() {
    aptrinsic("identify", { "id": document.querySelectorAll('[data-project]')[0].getAttribute('data-project') } );
 }
+
+// Ensuring call of function 'hideThings' after entire page loads properly, to avoid race conditions
+window.addEventListener("load", afterLoaded, false);
+
+function afterLoaded() {
+  // Additional wait for 500 milli seconds
+  const additionalWait = setTimeout(hideThings, 200);
+}
+
+function queryElements(selector, callback) {
+
+  const elements = document.querySelectorAll(selector);
+  elements.forEach(element => callback(element));
+}
+
+function observe(selector, callback) {
+  // Call it once to get all the elements already on the page
+  queryElements(selector, callback);
+
+  const observer = new MutationObserver(() => {
+    queryElements(selector, callback);
+  });
+
+  observer.observe(document.documentElement, {
+    // Listen to any kind of changes that might match the selector
+    attributes: true,
+    childList: true,
+  });
+}
+
