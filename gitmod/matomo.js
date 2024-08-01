@@ -1,5 +1,20 @@
 addGainsight();
 
+var isAcquian = false
+
+async function fetchUser() {
+  const resp = await fetch('/api/v4/user');
+  const user = await resp.json();
+  return user.email;
+}
+
+var email = fetchUser().then(usr => {
+  var emailSplit = usr.split('@')[1]
+  if(emailSplit === "acquia.com"){
+    isAcquian = true
+  }
+});
+
 var checkRequiredElementsExist = setInterval(function () {
     if (window.gl !== 'undefined' && document.readyState == "complete" && document.querySelectorAll('[data-project]').length) {
       // Use it
@@ -8,10 +23,12 @@ var checkRequiredElementsExist = setInterval(function () {
           hideThings();
         })
       });
-      clearInterval(checkRequiredElementsExist);
       hideThings();
-      gainsightIdentify();
     }
+    if (window.gl !== 'undefined' && document.querySelectorAll('[data-user]').length) {
+    gainsightIdentify();
+    }
+    clearInterval(checkRequiredElementsExist);
   }, 200);
 
 
@@ -78,7 +95,8 @@ function addGainsight () {
 }
 
 function gainsightIdentify() {
-   aptrinsic("identify", { "id": document.querySelectorAll('[data-project]')[0].getAttribute('data-project') } );
+   aptrinsic("identify", { "id": document.querySelectorAll('[data-user]')[0].getAttribute('data-user'),
+                            "isAcquian": isAcquian } );
 }
 
 // Ensuring call of function 'hideThings' after entire page loads properly, to avoid race conditions
