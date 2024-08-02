@@ -2,30 +2,28 @@ addGainsight();
 
 var isAcquian = false
 
-var checkRequiredElementsExist = setInterval(function () {
-    if (window.gl !== 'undefined' && document.readyState == "complete" && document.querySelectorAll('[data-project]').length) {
-      // Use it
-      observe('.table-holder', element => {
-        element.addEventListener('click', ()=>{
-          hideThings();
-        })
-      });
-      hideThings();
-    }
-    if (window.gl !== 'undefined' && document.querySelectorAll('[data-user]').length) {
-        const resp = await fetch('/api/v4/user');
-        const user = await resp.json();
-        const email = user.email
-      
-        var emailSplit = email.split('@')[1]
-        if(emailSplit === "acquia.com"){
-          isAcquian = true
+var checkRequiredElementsExist = async () => {
+    if (typeof window.gl !== 'undefined' && document.readyState == "complete" && document.querySelectorAll('[data-project]').length) {
+        observe('.table-holder', element => {
+            element.addEventListener('click', hideThings)
+        });
+        hideThings();
+        try {
+            const resp = await fetch('/api/v4/user');
+            const user = await resp.json();
+            const emailSplit = user.email?.split('@')[1]
+            if (emailSplit === "acquia.com") {
+                isAcquian = true
+            }
+            gainsightIdentify();
+        } catch (error) {
+            console.error(error);
         }
-        gainsightIdentify();
     }
-    clearInterval(checkRequiredElementsExist);
-  }, 200);
+    clearInterval(checkInterval);
+}
 
+var checkInterval = setInterval(checkRequiredElementsExist, 200); 
 
 /**
  * Add logic to hide the webide and edit options from Code Studio UI
@@ -90,7 +88,7 @@ function addGainsight () {
 }
 
 function gainsightIdentify() {
-   aptrinsic("identify", { "id": document.querySelectorAll('[data-user]')[0].getAttribute('data-user'),
+   aptrinsic("identify", { "id": document.querySelectorAll('[data-project]')[0].getAttribute('data-project'),
                             "isAcquian": isAcquian } );
 }
 
