@@ -2,19 +2,6 @@ addGainsight();
 
 var isAcquian = false
 
-async function fetchUser() {
-  const resp = await fetch('/api/v4/user');
-  const user = await resp.json();
-  return user.email;
-}
-
-var email = fetchUser().then(usr => {
-  var emailSplit = usr.split('@')[1]
-  if(emailSplit === "acquia.com"){
-    isAcquian = true
-  }
-});
-
 var checkRequiredElementsExist = setInterval(function () {
     if (window.gl !== 'undefined' && document.readyState == "complete" && document.querySelectorAll('[data-project]').length) {
       // Use it
@@ -26,7 +13,15 @@ var checkRequiredElementsExist = setInterval(function () {
       hideThings();
     }
     if (window.gl !== 'undefined' && document.querySelectorAll('[data-user]').length) {
-    gainsightIdentify();
+        const resp = await fetch('/api/v4/user');
+        const user = await resp.json();
+        const email = user.email
+      
+        var emailSplit = email.split('@')[1]
+        if(emailSplit === "acquia.com"){
+          isAcquian = true
+        }
+        gainsightIdentify();
     }
     clearInterval(checkRequiredElementsExist);
   }, 200);
