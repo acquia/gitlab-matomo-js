@@ -92,7 +92,6 @@ function addGainsight () {
 }
 
 function gainsightIdentify() {
-  console.log("in gainsightIdentify")
    aptrinsic("identify", { "id": document.querySelectorAll('[data-project]')[0].getAttribute('data-project'),
                             "isAcquian": isAcquian } );
 }
