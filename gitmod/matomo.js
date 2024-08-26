@@ -2,29 +2,33 @@ addGainsight();
 
 var isAcquian = false
 
-var checkRequiredElementsExist = async () => {
+var checkRequiredElementsExist = () => {
     if (typeof window.gl !== 'undefined' && document.readyState == "complete" && document.querySelectorAll('[data-project]').length) {
         observe('.table-holder', element => {
             element.addEventListener('click', hideThings)
         });
         hideThings();
-        try {
-            const resp = await fetch('/api/v4/user');
-            const user = await resp.json();
-            const emailSplit = user.email?.split('@')[1]
-            if (emailSplit === "acquia.com") {
-                isAcquian = true
-            }
-            gainsightIdentify();
-        } catch (error) {
-            console.error(error);
-        }
     }
     console.log("clearInterval")
     clearInterval(checkInterval);
 }
 
-var checkInterval = setInterval(checkRequiredElementsExist, 100); 
+var checkInterval = setInterval(() => Promise.resolve(fetch('/api/v4/user'))
+.then(response => {
+  return response.json()
+})
+.then(usr => { 
+  console.log("email", usr.email)
+     const emailSplit = usr.email?.split('@')[1]
+     if (emailSplit === "acquia.com") {
+         isAcquian = true
+     }
+     console.log("isAcquian ", isAcquian)
+})
+.then(() =>{
+  gainsightIdentify();
+  checkRequiredElementsExist();
+}), 100); 
 
 /**
  * Add logic to hide the webide and edit options from Code Studio UI
