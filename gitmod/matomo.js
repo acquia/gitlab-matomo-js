@@ -23,7 +23,7 @@ var checkRequiredElementsExist = async () => {
     clearInterval(checkInterval);
 }
 
-var checkInterval = setInterval(checkRequiredElementsExist, 200); 
+var checkInterval = setInterval(checkRequiredElementsExist, 100); 
 
 /**
  * Add logic to hide the webide and edit options from Code Studio UI
@@ -71,6 +71,8 @@ function addGainsight () {
     'code.acquia.com': 'AP-IJB0Z39VSYPZ-2',
     // Dev.
     'code.dev.cloudservices.acquia.io': 'AP-IJB0Z39VSYPZ-2-2',
+    // QA.
+    'code.qa.cloudservices.acquia.io': 'AP-IJB0Z39VSYPZ-2-2',
     // Stage.
     'code-staging.cloudservices.acquia.io': 'AP-IJB0Z39VSYPZ-2-3'
   }
