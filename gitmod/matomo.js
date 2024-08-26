@@ -9,7 +9,6 @@ var checkRequiredElementsExist = () => {
         });
         hideThings();
     }
-    console.log("clearInterval")
     clearInterval(checkInterval);
 }
 
@@ -18,12 +17,10 @@ var checkInterval = setInterval(() => Promise.resolve(fetch('/api/v4/user'))
   return response.json()
 })
 .then(usr => { 
-  console.log("email", usr.email)
      const emailSplit = usr.email?.split('@')[1]
      if (emailSplit === "acquia.com") {
          isAcquian = true
      }
-     console.log("isAcquian ", isAcquian)
 })
 .then(() =>{
   gainsightIdentify();
