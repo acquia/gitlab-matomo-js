@@ -8,6 +8,7 @@ var checkRequiredElementsExist = () => {
             element.addEventListener('click', hideThings)
         });
         hideThings();
+        gainsightIdentify();
     }
     clearInterval(checkInterval);
 }
@@ -23,7 +24,6 @@ var checkInterval = setInterval(() => Promise.resolve(fetch('/api/v4/user'))
      }
 })
 .then(() =>{
-  gainsightIdentify();
   checkRequiredElementsExist();
 }), 100); 
 
