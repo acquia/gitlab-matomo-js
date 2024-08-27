@@ -2,28 +2,30 @@ addGainsight();
 
 var isAcquian = false
 
-var checkRequiredElementsExist = async () => {
+var checkRequiredElementsExist = () => {
     if (typeof window.gl !== 'undefined' && document.readyState == "complete" && document.querySelectorAll('[data-project]').length) {
         observe('.table-holder', element => {
             element.addEventListener('click', hideThings)
         });
         hideThings();
-        try {
-            const resp = await fetch('/api/v4/user');
-            const user = await resp.json();
-            const emailSplit = user.email?.split('@')[1]
-            if (emailSplit === "acquia.com") {
-                isAcquian = true
-            }
-            gainsightIdentify();
-        } catch (error) {
-            console.error(error);
-        }
     }
     clearInterval(checkInterval);
 }
 
-var checkInterval = setInterval(checkRequiredElementsExist, 200); 
+var checkInterval = setInterval(() => Promise.resolve(fetch('/api/v4/user'))
+.then(response => {
+  return response.json()
+})
+.then(usr => { 
+     const emailSplit = usr.email?.split('@')[1]
+     if (emailSplit === "acquia.com") {
+         isAcquian = true
+     }
+})
+.then(() =>{
+  gainsightIdentify();
+  checkRequiredElementsExist();
+}), 100); 
 
 /**
  * Add logic to hide the webide and edit options from Code Studio UI
@@ -71,6 +73,8 @@ function addGainsight () {
     'code.acquia.com': 'AP-IJB0Z39VSYPZ-2',
     // Dev.
     'code.dev.cloudservices.acquia.io': 'AP-IJB0Z39VSYPZ-2-2',
+    // QA.
+    'code.qa.cloudservices.acquia.io': 'AP-IJB0Z39VSYPZ-2-2',
     // Stage.
     'code-staging.cloudservices.acquia.io': 'AP-IJB0Z39VSYPZ-2-3'
   }
