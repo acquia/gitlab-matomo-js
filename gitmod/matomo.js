@@ -15,15 +15,15 @@ var checkRequiredElementsExist = async () => {
             if (emailSplit === "acquia.com") {
                 isAcquian = true
             }
-            gainsightIdentify();
-        } catch (error) {
+          } catch (error) {
             console.error(error);
-        }
+          }
+          gainsightIdentify();
     }
     clearInterval(checkInterval);
 }
 
-var checkInterval = setInterval(checkRequiredElementsExist, 100); 
+var checkInterval = setInterval(checkRequiredElementsExist, 200); 
 
 /**
  * Add logic to hide the webide and edit options from Code Studio UI
