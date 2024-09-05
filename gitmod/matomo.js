@@ -8,17 +8,17 @@ var checkRequiredElementsExist = async () => {
             element.addEventListener('click', hideThings)
         });
         hideThings();
-        try {
-            const resp = await fetch('/api/v4/user');
-            const user = await resp.json();
-            const emailSplit = user.email?.split('@')[1]
-            if (emailSplit === "acquia.com") {
+        Promise.resolve(fetch('/api/v4/user'))
+          .then(response => {
+              return response.json()
+          }).then(usr => { 
+              const emailSplit = usr.email?.split('@')[1]
+              if (emailSplit === "acquia.com") {
                 isAcquian = true
-            }
-          } catch (error) {
-            console.error(error);
-          }
-          gainsightIdentify();
+              }
+          }).then(() =>{
+            gainsightIdentify();
+          }); 
     }
     clearInterval(checkInterval);
 }
