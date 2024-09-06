@@ -15,15 +15,17 @@ var checkRequiredElementsExist = () => {
               const emailSplit = usr.email?.split('@')[1]
               if (emailSplit === "acquia.com") {
                 isAcquian = true
+                console.log("-----1")
               }
           }).then(() =>{
+            console.log("-----2")
             gainsightIdentify();
           }); 
     }
     clearInterval(checkInterval);
 }
 
-var checkInterval = setInterval(checkRequiredElementsExist, 200); 
+var checkInterval = setInterval(checkRequiredElementsExist, 300); 
 
 /**
  * Add logic to hide the webide and edit options from Code Studio UI
