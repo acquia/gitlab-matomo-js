@@ -2,7 +2,7 @@ addGainsight();
 
 var isAcquian = false
 
-var checkRequiredElementsExist = async () => {
+var checkRequiredElementsExist = () => {
     if (typeof window.gl !== 'undefined' && document.readyState == "complete" && document.querySelectorAll('[data-project]').length) {
         observe('.table-holder', element => {
             element.addEventListener('click', hideThings)
