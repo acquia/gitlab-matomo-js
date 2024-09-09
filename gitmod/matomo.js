@@ -7,8 +7,8 @@ var checkRequiredElementsExist = () => {
         observe('.table-holder', element => {
             element.addEventListener('click', hideThings)
         });
-        hideThings();
         console.log("-----1")
+        hideThings();
         Promise.resolve(fetch('/api/v4/user'))
           .then(response => {
               console.log("-----2")
