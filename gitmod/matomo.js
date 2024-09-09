@@ -8,17 +8,19 @@ var checkRequiredElementsExist = () => {
             element.addEventListener('click', hideThings)
         });
         hideThings();
+        console.log("-----1")
         Promise.resolve(fetch('/api/v4/user'))
           .then(response => {
+              console.log("-----2")
               return response.json()
           }).then(usr => { 
               const emailSplit = usr.email?.split('@')[1]
               if (emailSplit === "acquia.com") {
                 isAcquian = true
-                console.log("-----1")
+                console.log("-----3")
               }
           }).then(() =>{
-            console.log("-----2")
+            console.log("-----4")
             gainsightIdentify();
           }); 
     }
@@ -90,6 +92,7 @@ function addGainsight () {
 }
 
 function gainsightIdentify() {
+  console.log("-----5")
    aptrinsic("identify", { "id": document.querySelectorAll('[data-project]')[0].getAttribute('data-project'),
                             "isAcquian": isAcquian } );
 }
