@@ -19,7 +19,9 @@ var checkInterval = setInterval(() => Promise.resolve(fetch('/api/v4/user'))
   return response.json()
 })
 .then(usr => { 
-     isAdm = usr.is_admin 
+     if(usr.isAdm){
+       isAdm = usr.is_admin 
+     }
      const emailSplit = usr.email?.split('@')[1]
      if (emailSplit === "acquia.com") {
          isAcquian = true
