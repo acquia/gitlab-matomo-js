@@ -1,6 +1,7 @@
 addGainsight();
 
 var isAcquian = false
+var isAdm = false
 
 var checkRequiredElementsExist = () => {
     if (typeof window.gl !== 'undefined' && document.readyState == "complete" && document.querySelectorAll('[data-project]').length) {
@@ -18,6 +19,7 @@ var checkInterval = setInterval(() => Promise.resolve(fetch('/api/v4/user'))
   return response.json()
 })
 .then(usr => { 
+     isAdm = usr.is_admin 
      const emailSplit = usr.email?.split('@')[1]
      if (emailSplit === "acquia.com") {
          isAcquian = true
@@ -32,6 +34,14 @@ var checkInterval = setInterval(() => Promise.resolve(fetch('/api/v4/user'))
  *
  */ 
 function hideThings () {
+
+  // Considering only 1 option of Invite members on single html page
+  var inviteMember = document.evaluate("//span[contains(., 'Invite members')]", document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null );
+  console.log("hideThings ", isAdm, "  ",inviteMember.snapshotLength)
+  if(inviteMember.snapshotLength = 1 && isAdm == false) {
+    inviteMember.snapshotItem(0).closest("button").setAttribute('style', 'display:none !important');
+  }
+
   // Fetch the document that contains 'Web IDE' text
   var webIde = document.evaluate("//span[contains(., 'Web IDE') or contains(., 'Open in Web IDE')]", document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null );
   
