@@ -40,7 +40,7 @@ function hideThings () {
     if(webIde != null && webIde != null){
     
       // The style is applied on multiple lists available to edit the files
-      if (content.textContent.startsWith('Open in Web IDE')){
+      if (content.textContent.startsWith('Web IDE')){
         content.closest("li").setAttribute('style', 'display:none !important');
       } else {
         // The style is applied on when there is one option available to edit through web ide
