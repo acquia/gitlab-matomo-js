@@ -32,19 +32,53 @@ var checkInterval = setInterval(() => Promise.resolve(fetch('/api/v4/user'))
  *
  */ 
 function hideThings () {
-  // Fetch the document that contains 'Web IDE' text
-  var webIde = document.evaluate("//span[contains(., 'Web IDE') or contains(., 'Open in Web IDE')]", document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null );
+  console.log('hideThings: Starting to hide Web IDE elements');
   
-  for (let index = 0; index < webIde.snapshotLength; index++) {
-    var content = webIde.snapshotItem(index);
-    if(webIde != null && webIde != null){
-    
-      // The style is applied on multiple lists available to edit the files
-      if (content.textContent.startsWith('Web IDE')){
-        content.closest("li").setAttribute('style', 'display:none !important');
-      } else {
-        // The style is applied on when there is one option available to edit through web ide
-        content.parentNode.closest(".gl-new-dropdown").setAttribute('style', 'display:none !important');
+  // More selective approach: hide only Web IDE specific elements
+  // Look for Web IDE buttons, links, and menu items
+  const webIdeSelectors = [
+    'a[href*="ide"]',
+    'button[title*="Web IDE"]',
+    '[data-qa-selector*="web_ide"]',
+    '.js-web-ide-button',
+    '[aria-label*="Web IDE"]'
+  ];
+  
+  webIdeSelectors.forEach(selector => {
+    const elements = document.querySelectorAll(selector);
+    elements.forEach(element => {
+      if (element.textContent.includes('Web IDE') || element.title?.includes('Web IDE') || element.getAttribute('aria-label')?.includes('Web IDE')) {
+        element.setAttribute('style', 'display:none !important');
+        console.log('hideThings: Hidden Web IDE element:', element);
+      }
+    });
+  });
+  
+  // Handle dropdown menu items containing Web IDE
+  const webIdeMenuItems = document.evaluate("//li[.//text()[contains(., 'Web IDE')]]", document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+  for (let index = 0; index < webIdeMenuItems.snapshotLength; index++) {
+    const menuItem = webIdeMenuItems.snapshotItem(index);
+    if (menuItem && menuItem.textContent.includes('Web IDE') && !menuItem.textContent.includes('Code')) {
+      menuItem.setAttribute('style', 'display:none !important');
+      console.log('hideThings: Hidden Web IDE menu item:', menuItem);
+    }
+  }
+  
+  // Handle spans/buttons that only contain Web IDE text (not merged with Code)
+  const webIdeSpans = document.evaluate("//span[text()='Web IDE' or text()='Open in Web IDE']", document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+  for (let index = 0; index < webIdeSpans.snapshotLength; index++) {
+    const span = webIdeSpans.snapshotItem(index);
+    if (span) {
+      // Check if this is part of a combined "Code" button or standalone
+      const parentButton = span.closest('button, a, li');
+      if (parentButton && parentButton.textContent.trim() === 'Web IDE') {
+        // This is a standalone Web IDE button, hide it
+        parentButton.setAttribute('style', 'display:none !important');
+        console.log('hideThings: Hidden standalone Web IDE button:', parentButton);
+      } else if (parentButton && !parentButton.textContent.includes('Code')) {
+        // Hide only if it doesn't contain "Code" text
+        parentButton.setAttribute('style', 'display:none !important');
+        console.log('hideThings: Hidden Web IDE element (not Code):', parentButton);
       }
     }
   }
