@@ -32,31 +32,54 @@ var checkInterval = setInterval(() => Promise.resolve(fetch('/api/v4/user'))
  *
  */ 
 function hideThings () {
+  // Debug: Log that hideThings is running
+  console.log('hideThings: Starting execution');
+  
   // Hide Web IDE specific elements using multiple targeting strategies
   
-  // Strategy 1: Target common Web IDE selectors
+  // Strategy 1: Direct text search for "Web IDE" in all elements
+  const allElements = document.querySelectorAll('*');
+  console.log('hideThings: Checking', allElements.length, 'elements for Web IDE text');
+  
+  let hiddenCount = 0;
+  allElements.forEach(element => {
+    if (element.textContent && element.children.length === 0) { // Text nodes only, no children
+      const text = element.textContent.trim();
+      if (text === 'Web IDE' || text === 'Open in Web IDE') {
+        console.log('hideThings: Found Web IDE text element:', element, 'Text:', text);
+        const parentToHide = element.closest('li, a, button, [role="menuitem"]');
+        if (parentToHide) {
+          parentToHide.setAttribute('style', 'display:none !important');
+          hiddenCount++;
+          console.log('hideThings: Hidden parent element:', parentToHide);
+        } else {
+          element.setAttribute('style', 'display:none !important');
+          hiddenCount++;
+          console.log('hideThings: Hidden element directly:', element);
+        }
+      }
+    }
+  });
+  
+  console.log('hideThings: Hidden', hiddenCount, 'Web IDE elements');
+  
+  // Also try common selectors
   const webIdeSelectors = [
-    'a[href*="ide"]',
+    'a[href*="/-/ide/"]',
     'button[title*="Web IDE"]',
     '[data-qa-selector*="web_ide"]',
     '.js-web-ide-button',
     '[aria-label*="Web IDE"]',
-    // Additional selectors for edit dropdown menus
     'a[data-track-action="click_edit_ide"]',
-    '[data-track-label*="web_ide"]',
-    '.btn[href*="ide"]'
+    '[data-track-label*="web_ide"]'
   ];
   
   webIdeSelectors.forEach(selector => {
     const elements = document.querySelectorAll(selector);
+    console.log('hideThings: Selector', selector, 'found', elements.length, 'elements');
     elements.forEach(element => {
-      if (element.textContent.includes('Web IDE') || 
-          element.title?.includes('Web IDE') || 
-          element.getAttribute('aria-label')?.includes('Web IDE') ||
-          element.href?.includes('ide') ||
-          element.getAttribute('data-track-action')?.includes('ide')) {
-        element.setAttribute('style', 'display:none !important');
-      }
+      element.setAttribute('style', 'display:none !important');
+      console.log('hideThings: Hidden via selector:', element);
     });
   });
   
@@ -137,42 +160,37 @@ function hideThings () {
   });
   
   // Strategy 5: Use MutationObserver to catch dynamically loaded dropdown content
-  // ONLY target Web IDE specifically, preserve all other options
   const observer = new MutationObserver((mutations) => {
+    console.log('hideThings: MutationObserver triggered with', mutations.length, 'mutations');
     mutations.forEach((mutation) => {
       mutation.addedNodes.forEach((node) => {
         if (node.nodeType === 1) { // Element node
+          console.log('hideThings: Processing added node:', node);
+          
           // Use setTimeout to ensure the dropdown is fully rendered
           setTimeout(() => {
-            // Very specific Web IDE targeting - only exact matches
-            const webIdeSelectors = [
-              'a[href*="/-/ide/"]', // GitLab Web IDE URLs
-              'button[data-track-label="web_ide"]',
-              '[data-qa-selector*="web_ide"]'
-            ];
-            
-            webIdeSelectors.forEach(selector => {
-              const elements = node.querySelectorAll ? node.querySelectorAll(selector) : [];
-              elements.forEach(element => {
-                element.setAttribute('style', 'display:none !important');
-              });
-            });
-            
-            // Text-based matching - be VERY specific
-            const allItems = node.querySelectorAll ? node.querySelectorAll('a, li, [role="menuitem"], button') : [];
-            allItems.forEach(item => {
-              if (item.textContent && item.textContent.trim()) {
-                const text = item.textContent.trim();
-                // ONLY hide exact "Web IDE" matches, nothing else
-                if ((text === 'Web IDE' || text === 'Open in Web IDE') && 
-                    !text.includes('Visual Studio Code') && 
-                    !text.includes('IntelliJ') && 
-                    !text.includes('Edit in pipeline editor') && 
-                    !text.includes('Edit single file')) {
-                  item.setAttribute('style', 'display:none !important');
+            // Search for Web IDE text in the new node
+            if (node.querySelectorAll) {
+              const allItems = node.querySelectorAll('*');
+              console.log('hideThings: Checking', allItems.length, 'new elements for Web IDE text');
+              
+              allItems.forEach(item => {
+                if (item.textContent && item.children.length === 0) { // Text nodes only
+                  const text = item.textContent.trim();
+                  if (text === 'Web IDE' || text === 'Open in Web IDE') {
+                    console.log('hideThings: MutationObserver found Web IDE:', item, 'Text:', text);
+                    const parentToHide = item.closest('li, a, button, [role="menuitem"]');
+                    if (parentToHide) {
+                      parentToHide.setAttribute('style', 'display:none !important');
+                      console.log('hideThings: MutationObserver hidden parent:', parentToHide);
+                    } else {
+                      item.setAttribute('style', 'display:none !important');
+                      console.log('hideThings: MutationObserver hidden item directly:', item);
+                    }
+                  }
                 }
-              }
-            });
+              });
+            }
           }, 10);
         }
       });
