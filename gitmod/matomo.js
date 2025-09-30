@@ -60,22 +60,29 @@ function hideThings () {
     });
   });
   
-  // Strategy 2: Handle dropdown menu items containing Web IDE (including "Open in Web IDE")
-  const webIdeMenuItems = document.evaluate("//li[.//text()[contains(., 'Web IDE')] or .//text()[contains(., 'Open in Web IDE')]]", document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+  // Strategy 2: Handle dropdown menu items containing Web IDE (VERY specific matching)
+  const webIdeMenuItems = document.evaluate("//li[.//text()[text()='Web IDE'] or .//text()[text()='Open in Web IDE']]", document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
   for (let index = 0; index < webIdeMenuItems.snapshotLength; index++) {
     const menuItem = webIdeMenuItems.snapshotItem(index);
-    if (menuItem && (menuItem.textContent.includes('Web IDE') || menuItem.textContent.includes('Open in Web IDE')) && !menuItem.textContent.includes('Edit in pipeline editor')) {
-      menuItem.setAttribute('style', 'display:none !important');
+    if (menuItem) {
+      const text = menuItem.textContent.trim();
+      // ONLY hide if it's exactly "Web IDE" or "Open in Web IDE", nothing else
+      if ((text === 'Web IDE' || text === 'Open in Web IDE') && 
+          !text.includes('Visual Studio Code') && 
+          !text.includes('IntelliJ') &&
+          !text.includes('Edit in pipeline editor')) {
+        menuItem.setAttribute('style', 'display:none !important');
+      }
     }
   }
   
-  // Strategy 3: Target specific text patterns for Web IDE
+  // Strategy 3: Target EXACT text patterns for Web IDE only
   const webIdeTextPatterns = [
     "//span[text()='Web IDE']",
     "//span[text()='Open in Web IDE']", 
+    "//a[text()='Web IDE']",
     "//a[text()='Open in Web IDE']",
-    "//a[contains(text(), 'Web IDE')]",
-    "//button[contains(text(), 'Web IDE')]"
+    "//button[text()='Web IDE']"
   ];
   
   webIdeTextPatterns.forEach(pattern => {
@@ -85,8 +92,15 @@ function hideThings () {
       if (element) {
         // Find the appropriate parent container to hide
         const parentToHide = element.closest('li, a, button, .dropdown-item, [role="menuitem"]');
-        if (parentToHide && !parentToHide.textContent.includes('Edit in pipeline editor')) {
-          parentToHide.setAttribute('style', 'display:none !important');
+        if (parentToHide) {
+          const parentText = parentToHide.textContent.trim();
+          // Double-check we're not hiding legitimate options
+          if ((parentText === 'Web IDE' || parentText === 'Open in Web IDE') &&
+              !parentText.includes('Visual Studio Code') && 
+              !parentText.includes('IntelliJ') &&
+              !parentText.includes('Edit in pipeline editor')) {
+            parentToHide.setAttribute('style', 'display:none !important');
+          }
         }
       }
     }
@@ -123,35 +137,43 @@ function hideThings () {
   });
   
   // Strategy 5: Use MutationObserver to catch dynamically loaded dropdown content
-  // GitLab often loads dropdown content dynamically when clicked
+  // ONLY target Web IDE specifically, preserve all other options
   const observer = new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
       mutation.addedNodes.forEach((node) => {
         if (node.nodeType === 1) { // Element node
-          // Check if this is a dropdown menu
-          if (node.matches && (node.matches('.dropdown-menu') || node.matches('.gl-dropdown-menu') || node.querySelector('[role="menu"]'))) {
-            const webIdeItems = node.querySelectorAll('a, li, [role="menuitem"], button');
-            webIdeItems.forEach(item => {
-              if ((item.textContent.includes('Web IDE') || item.textContent.includes('Open in Web IDE')) && 
-                  !item.textContent.includes('Edit in pipeline editor')) {
-                item.setAttribute('style', 'display:none !important');
-              }
+          // Use setTimeout to ensure the dropdown is fully rendered
+          setTimeout(() => {
+            // Very specific Web IDE targeting - only exact matches
+            const webIdeSelectors = [
+              'a[href*="/-/ide/"]', // GitLab Web IDE URLs
+              'button[data-track-label="web_ide"]',
+              '[data-qa-selector*="web_ide"]'
+            ];
+            
+            webIdeSelectors.forEach(selector => {
+              const elements = node.querySelectorAll ? node.querySelectorAll(selector) : [];
+              elements.forEach(element => {
+                element.setAttribute('style', 'display:none !important');
+              });
             });
-          }
-          
-          // Also check children of added nodes
-          if (node.querySelector) {
-            const childWebIdeItems = node.querySelectorAll('*');
-            childWebIdeItems.forEach(item => {
-              if ((item.textContent.includes('Web IDE') || item.textContent.includes('Open in Web IDE')) && 
-                  !item.textContent.includes('Edit in pipeline editor')) {
-                const parentToHide = item.closest('li, a, button, [role="menuitem"]');
-                if (parentToHide) {
-                  parentToHide.setAttribute('style', 'display:none !important');
+            
+            // Text-based matching - be VERY specific
+            const allItems = node.querySelectorAll ? node.querySelectorAll('a, li, [role="menuitem"], button') : [];
+            allItems.forEach(item => {
+              if (item.textContent && item.textContent.trim()) {
+                const text = item.textContent.trim();
+                // ONLY hide exact "Web IDE" matches, nothing else
+                if ((text === 'Web IDE' || text === 'Open in Web IDE') && 
+                    !text.includes('Visual Studio Code') && 
+                    !text.includes('IntelliJ') && 
+                    !text.includes('Edit in pipeline editor') && 
+                    !text.includes('Edit single file')) {
+                  item.setAttribute('style', 'display:none !important');
                 }
               }
             });
-          }
+          }, 10);
         }
       });
     });
@@ -160,7 +182,8 @@ function hideThings () {
   // Start observing
   observer.observe(document.body, {
     childList: true,
-    subtree: true
+    subtree: true,
+    attributes: false
   });
 
   // Hide Operator section from left panel
