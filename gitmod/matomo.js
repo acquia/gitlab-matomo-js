@@ -32,56 +32,84 @@ var checkInterval = setInterval(() => Promise.resolve(fetch('/api/v4/user'))
  *
  */ 
 function hideThings () {
-  console.log('hideThings: Starting to hide Web IDE elements');
+  // Hide Web IDE specific elements using multiple targeting strategies
   
-  // More selective approach: hide only Web IDE specific elements
-  // Look for Web IDE buttons, links, and menu items
+  // Strategy 1: Target common Web IDE selectors
   const webIdeSelectors = [
     'a[href*="ide"]',
     'button[title*="Web IDE"]',
     '[data-qa-selector*="web_ide"]',
     '.js-web-ide-button',
-    '[aria-label*="Web IDE"]'
+    '[aria-label*="Web IDE"]',
+    // Additional selectors for edit dropdown menus
+    'a[data-track-action="click_edit_ide"]',
+    '[data-track-label*="web_ide"]',
+    '.btn[href*="ide"]'
   ];
   
   webIdeSelectors.forEach(selector => {
     const elements = document.querySelectorAll(selector);
     elements.forEach(element => {
-      if (element.textContent.includes('Web IDE') || element.title?.includes('Web IDE') || element.getAttribute('aria-label')?.includes('Web IDE')) {
+      if (element.textContent.includes('Web IDE') || 
+          element.title?.includes('Web IDE') || 
+          element.getAttribute('aria-label')?.includes('Web IDE') ||
+          element.href?.includes('ide') ||
+          element.getAttribute('data-track-action')?.includes('ide')) {
         element.setAttribute('style', 'display:none !important');
-        console.log('hideThings: Hidden Web IDE element:', element);
       }
     });
   });
   
-  // Handle dropdown menu items containing Web IDE
-  const webIdeMenuItems = document.evaluate("//li[.//text()[contains(., 'Web IDE')]]", document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+  // Strategy 2: Handle dropdown menu items containing Web IDE (including "Open in Web IDE")
+  const webIdeMenuItems = document.evaluate("//li[.//text()[contains(., 'Web IDE')] or .//text()[contains(., 'Open in Web IDE')]]", document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
   for (let index = 0; index < webIdeMenuItems.snapshotLength; index++) {
     const menuItem = webIdeMenuItems.snapshotItem(index);
-    if (menuItem && menuItem.textContent.includes('Web IDE') && !menuItem.textContent.includes('Code')) {
+    if (menuItem && (menuItem.textContent.includes('Web IDE') || menuItem.textContent.includes('Open in Web IDE')) && !menuItem.textContent.includes('Edit in pipeline editor')) {
       menuItem.setAttribute('style', 'display:none !important');
-      console.log('hideThings: Hidden Web IDE menu item:', menuItem);
     }
   }
   
-  // Handle spans/buttons that only contain Web IDE text (not merged with Code)
-  const webIdeSpans = document.evaluate("//span[text()='Web IDE' or text()='Open in Web IDE']", document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-  for (let index = 0; index < webIdeSpans.snapshotLength; index++) {
-    const span = webIdeSpans.snapshotItem(index);
-    if (span) {
-      // Check if this is part of a combined "Code" button or standalone
-      const parentButton = span.closest('button, a, li');
-      if (parentButton && parentButton.textContent.trim() === 'Web IDE') {
-        // This is a standalone Web IDE button, hide it
-        parentButton.setAttribute('style', 'display:none !important');
-        console.log('hideThings: Hidden standalone Web IDE button:', parentButton);
-      } else if (parentButton && !parentButton.textContent.includes('Code')) {
-        // Hide only if it doesn't contain "Code" text
-        parentButton.setAttribute('style', 'display:none !important');
-        console.log('hideThings: Hidden Web IDE element (not Code):', parentButton);
+  // Strategy 3: Target specific text patterns for Web IDE
+  const webIdeTextPatterns = [
+    "//span[text()='Web IDE']",
+    "//span[text()='Open in Web IDE']", 
+    "//a[text()='Open in Web IDE']",
+    "//a[contains(text(), 'Web IDE')]",
+    "//button[contains(text(), 'Web IDE')]"
+  ];
+  
+  webIdeTextPatterns.forEach(pattern => {
+    const elements = document.evaluate(pattern, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+    for (let index = 0; index < elements.snapshotLength; index++) {
+      const element = elements.snapshotItem(index);
+      if (element) {
+        // Find the appropriate parent container to hide
+        const parentToHide = element.closest('li, a, button, .dropdown-item, [role="menuitem"]');
+        if (parentToHide && !parentToHide.textContent.includes('Edit in pipeline editor')) {
+          parentToHide.setAttribute('style', 'display:none !important');
+        }
       }
     }
-  }
+  });
+  
+  // Strategy 4: Handle Edit dropdown containers specifically 
+  // This targets the specific pattern seen in the screenshots where Web IDE appears in Edit dropdowns
+  const editDropdowns = document.querySelectorAll('[data-toggle="dropdown"], .dropdown-toggle');
+  editDropdowns.forEach(dropdown => {
+    if (dropdown.textContent.includes('Edit')) {
+      // Look for Web IDE options in the associated dropdown menu
+      const dropdownMenu = dropdown.parentElement?.querySelector('.dropdown-menu, .gl-dropdown-menu');
+      if (dropdownMenu) {
+        const webIdeItems = dropdownMenu.querySelectorAll('a, li, [role="menuitem"]');
+        webIdeItems.forEach(item => {
+          if ((item.textContent.includes('Web IDE') || item.textContent.includes('Open in Web IDE')) && 
+              !item.textContent.includes('Edit in pipeline editor')) {
+            item.setAttribute('style', 'display:none !important');
+          }
+        });
+      }
+    }
+  });
 
   // Hide Operator section from left panel
   if ((operateLink = document.querySelector('[data-qa-section-name="Operate"]'))) {
