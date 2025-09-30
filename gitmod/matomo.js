@@ -93,22 +93,74 @@ function hideThings () {
   });
   
   // Strategy 4: Handle Edit dropdown containers specifically 
-  // This targets the specific pattern seen in the screenshots where Web IDE appears in Edit dropdowns
-  const editDropdowns = document.querySelectorAll('[data-toggle="dropdown"], .dropdown-toggle');
+  // This targets GitLab's current DOM structure with data-testid attributes
+  const editDropdowns = document.querySelectorAll('[data-testid="edit-dropdown-toggle"], button[aria-label*="Edit"], [data-toggle="dropdown"]');
   editDropdowns.forEach(dropdown => {
-    if (dropdown.textContent.includes('Edit')) {
-      // Look for Web IDE options in the associated dropdown menu
-      const dropdownMenu = dropdown.parentElement?.querySelector('.dropdown-menu, .gl-dropdown-menu');
-      if (dropdownMenu) {
-        const webIdeItems = dropdownMenu.querySelectorAll('a, li, [role="menuitem"]');
-        webIdeItems.forEach(item => {
-          if ((item.textContent.includes('Web IDE') || item.textContent.includes('Open in Web IDE')) && 
-              !item.textContent.includes('Edit in pipeline editor')) {
-            item.setAttribute('style', 'display:none !important');
-          }
-        });
-      }
+    if (dropdown.textContent.includes('Edit') || dropdown.getAttribute('data-testid') === 'edit-dropdown-toggle') {
+      // Look for Web IDE options in various dropdown menu patterns
+      const possibleMenus = [
+        dropdown.nextElementSibling,
+        dropdown.parentElement?.querySelector('.dropdown-menu'),
+        dropdown.parentElement?.querySelector('.gl-dropdown-menu'), 
+        dropdown.parentElement?.querySelector('[data-testid*="dropdown"]'),
+        dropdown.parentElement?.querySelector('ul[role="menu"]'),
+        // Sometimes the menu is a sibling of the parent
+        dropdown.parentElement?.nextElementSibling
+      ];
+      
+      possibleMenus.forEach(dropdownMenu => {
+        if (dropdownMenu) {
+          const webIdeItems = dropdownMenu.querySelectorAll('a, li, [role="menuitem"], button');
+          webIdeItems.forEach(item => {
+            if ((item.textContent.includes('Web IDE') || item.textContent.includes('Open in Web IDE')) && 
+                !item.textContent.includes('Edit in pipeline editor')) {
+              item.setAttribute('style', 'display:none !important');
+            }
+          });
+        }
+      });
     }
+  });
+  
+  // Strategy 5: Use MutationObserver to catch dynamically loaded dropdown content
+  // GitLab often loads dropdown content dynamically when clicked
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node) => {
+        if (node.nodeType === 1) { // Element node
+          // Check if this is a dropdown menu
+          if (node.matches && (node.matches('.dropdown-menu') || node.matches('.gl-dropdown-menu') || node.querySelector('[role="menu"]'))) {
+            const webIdeItems = node.querySelectorAll('a, li, [role="menuitem"], button');
+            webIdeItems.forEach(item => {
+              if ((item.textContent.includes('Web IDE') || item.textContent.includes('Open in Web IDE')) && 
+                  !item.textContent.includes('Edit in pipeline editor')) {
+                item.setAttribute('style', 'display:none !important');
+              }
+            });
+          }
+          
+          // Also check children of added nodes
+          if (node.querySelector) {
+            const childWebIdeItems = node.querySelectorAll('*');
+            childWebIdeItems.forEach(item => {
+              if ((item.textContent.includes('Web IDE') || item.textContent.includes('Open in Web IDE')) && 
+                  !item.textContent.includes('Edit in pipeline editor')) {
+                const parentToHide = item.closest('li, a, button, [role="menuitem"]');
+                if (parentToHide) {
+                  parentToHide.setAttribute('style', 'display:none !important');
+                }
+              }
+            });
+          }
+        }
+      });
+    });
+  });
+  
+  // Start observing
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true
   });
 
   // Hide Operator section from left panel
